@@ -47,10 +47,10 @@ cmake                                   \
   -D TINT_BUILD_TESTS=OFF
 
 # NOTE: webgpu target is in extra.cmake
-cmake --build dawn.build --config Release --target webgpu --parallel 4
+cmake --build dawn.build --config Release --target webgpu_dawn --parallel 4
 
 cp dawn.build/gen/include/dawn/webgpu.h .
-cp dawn.build/src/dawn/native/libwebgpu.so .
+cp dawn.build/src/dawn/native/libwebgpu_dawn.so .
 
 if [ -n "$GITHUB_WORKFLOW" ]; then
 
@@ -60,7 +60,7 @@ if [ -n "$GITHUB_WORKFLOW" ]; then
   LDATE=$(date +"%Y%m%d%H%M%S")
   BUILD_DATE="${LDATE:0:4}-${LDATE:4:2}-${LDATE:6:2}"
 
-  tar -czvf webgpu-"$BUILD_DATE".zip libwebgpu.so webgpu.h dawn_commit.txt
+  tar -czvf webgpu-"$BUILD_DATE".zip libwebgpu_dawn.so webgpu.h dawn_commit.txt
 
   echo "DAWN_COMMIT=$DAWN_COMMIT" >> $GITHUB_ENV
   echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
