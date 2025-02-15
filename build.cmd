@@ -41,18 +41,6 @@ where /Q cl.exe || (
 )
 
 rem
-rem get depot tools
-rem
-
-set PATH=%CD%\depot_tools;%PATH%
-set DEPOT_TOOLS_WIN_TOOLCHAIN=0
-
-if not exist depot_tools (
-  call git clone --depth=1 --no-tags --single-branch https://chromium.googlesource.com/chromium/tools/depot_tools.git || exit /b 1
-)
-
-
-rem
 rem clone dawn
 rem
 
@@ -64,11 +52,6 @@ if not exist dawn (
   cd ..
 )
 
-cd dawn
-copy /y scripts\standalone.gclient .gclient
-call gclient sync || exit /b 1
-cd ..
-
 rem
 rem build dawn
 rem
@@ -76,23 +59,31 @@ rem
 cmake                                         ^
   -S dawn                                     ^
   -B dawn.build                               ^
+  -A x64,version=10.0.26100.0                 ^
   -D CMAKE_BUILD_TYPE=Release                 ^
   -D CMAKE_POLICY_DEFAULT_CMP0091=NEW         ^
+  -D CMAKE_POLICY_DEFAULT_CMP0092=NEW         ^
   -D CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded ^
-  -D BUILD_SHARED_LIBS=OFF                    ^
-  -D BUILD_SAMPLES=OFF                        ^
+  -D DAWN_BUILD_SAMPLES=OFF                   ^
+  -D DAWN_BUILD_TESTS=OFF                     ^
+  -D DAWN_ENABLE_VULKAN=ON                    ^
   -D DAWN_ENABLE_D3D12=ON                     ^
   -D DAWN_ENABLE_D3D11=ON                     ^
   -D DAWN_ENABLE_NULL=OFF                     ^
   -D DAWN_ENABLE_DESKTOP_GL=OFF               ^
   -D DAWN_ENABLE_OPENGLES=OFF                 ^
-  -D DAWN_ENABLE_VULKAN=ON                    ^
-  -D DAWN_BUILD_SAMPLES=OFF                   ^
+  -D DAWN_USE_GLFW=OFF                        ^
+  -D DAWN_ENABLE_SPIRV_VALIDATION=OFF         ^
+  -D DAWN_DXC_ENABLE_ASSERTS_IN_NDEBUG=OFF    ^
+  -D DAWN_FETCH_DEPENDENCIES=ON               ^
+  -D DAWN_BUILD_MONOLITHIC_LIBRARY=ON         ^
   -D TINT_BUILD_SAMPLES=OFF                   ^
   -D TINT_BUILD_DOCS=OFF                      ^
   -D TINT_BUILD_TESTS=OFF                     ^
   -D TINT_BUILD_GLSL_VALIDATOR=OFF            ^
   -D TINT_BUILD_GLSL_WRITER=OFF               ^
+  -D TINT_BUILD_SPV_READER=ON                 ^
+  -D TINT_BUILD_SPV_WRITER=ON                 ^
   -D ENABLE_HLSL=OFF 	                      ^
   || exit /b 1
 

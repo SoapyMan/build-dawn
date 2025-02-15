@@ -14,6 +14,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  info:
+    runs-on: ubuntu-24.04
+    outputs:
+      DAWN_COMMIT: ${{ steps.info.outputs.DAWN_COMMIT }}
+      BUILD_DATE: ${{ steps.info.outputs.BUILD_DATE }}
+    steps:
+      - name: Get Latest Commit Id
+        id: info
+        run: |
+          echo DAWN_COMMIT=`git ls-remote https://github.com/SoapyMan/dawn.git all-fixes-merged | awk '{ print $1 }'` >> ${GITHUB_OUTPUT}
+          echo BUILD_DATE=`date +'%Y-%m-%d'` >> ${GITHUB_OUTPUT}
+          
   build:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
@@ -33,6 +45,9 @@ jobs:
             artifact_type: "tar.gz",
             artifact_content_type: application/x-tgz
           }
+    env:
+      DAWN_COMMIT: ${{ needs.info.outputs.DAWN_COMMIT }}
+      BUILD_DATE: ${{ needs.info.outputs.BUILD_DATE }}
 
     steps:
       - name: Install dependencies
@@ -42,6 +57,13 @@ jobs:
           sudo apt install cmake pkg-config libgl-dev libx11-xcb-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev wayland-protocols libwayland-dev libxkbcommon-dev
 
       - uses: actions/checkout@v2
+      
+      - name: Install Windows SDK v10.0.26100.0
+        if: startsWith(matrix.config.name, 'Windows')
+        id: win-sdk
+        shell: cmd
+        run: |
+          "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" modify --installPath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise" --quiet --force --norestart --add Microsoft.VisualStudio.Component.Windows11SDK.26100
 
       - name: build
         if: startsWith(matrix.config.name, 'Windows')
@@ -55,26 +77,14 @@ jobs:
         shell: bash
         run: ./build.sh
 
-      - name: release
-        id: release
-        if: steps.build.outputs.DAWN_COMMIT != ''
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ steps.build.outputs.BUILD_DATE }}
-          release_name: ${{ steps.build.outputs.BUILD_DATE }}
-          body: |
-            [dawn commit](https://dawn.googlesource.com/dawn/+/${{ steps.build.outputs.DAWN_COMMIT }})
-
-      - name: upload
-        if: github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'created')
-        id: upload
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.release.outputs.upload_url }}
-          asset_path: "webgpu-dawn-${{ steps.build.outputs.BUILD_DATE }}.${{ matrix.config.artifact_type }}"
-          asset_name: "webgpu-dawn-${{ steps.build.outputs.BUILD_DATE }}.${{ matrix.config.artifact_type }}"
-          asset_content_type: ${{ matrix.config.artifact_content_type }}
+          name: dawn-${{ matrix.config.name }}-${{ env.BUILD_DATE }}
+          path:  |
+              *.dll
+              *.lib
+              *.so
+              *.h
+          if-no-files-found: error
+          compression-level: 4

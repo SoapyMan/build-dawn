@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# Dependencies
-
-export PATH=$(pwd)/depot_tools:$PATH
-
-# Get depot tools
-if [ ! -d "depot_tools" ]; then
-  git clone --depth=1 --no-tags --single-branch https://chromium.googlesource.com/chromium/tools/depot_tools.git
-fi
-
 # Clone dawn
 
 if [ ! -d "dawn" ]; then
@@ -20,33 +11,33 @@ else
   cd ..
 fi
 
-cd dawn
-cp scripts/standalone.gclient .gclient
-gclient sync
-cd ..
-
-cat extra.cmake >> dawn/src/dawn/native/CMakeLists.txt
-
-cmake                                   \
-  -S dawn                               \
-  -B dawn.build                         \
-  -D CMAKE_BUILD_TYPE=Release           \
-  -D CMAKE_POLICY_DEFAULT_CMP0091=NEW   \
-  -D BUILD_SHARED_LIBS=off              \
-  -D BUILD_SAMPLES=OFF                  \
-  -D DAWN_USE_WAYLAND=ON                \
-  -D DAWN_ENABLE_D3D12=OFF              \
-  -D DAWN_ENABLE_D3D11=OFF              \
-  -D DAWN_ENABLE_NULL=OFF               \
-  -D DAWN_ENABLE_DESKTOP_GL=OFF         \
-  -D DAWN_ENABLE_OPENGLES=OFF           \
-  -D DAWN_ENABLE_VULKAN=ON              \
-  -D DAWN_BUILD_SAMPLES=OFF             \
-  -D TINT_BUILD_SAMPLES=OFF             \
-  -D TINT_BUILD_DOCS=OFF                \
-  -D TINT_BUILD_TESTS=OFF               \
-  -D TINT_BUILD_GLSL_VALIDATOR=OFF      \
-  -D TINT_BUILD_GLSL_WRITER=OFF         \
+cmake                                         \
+  -S dawn                                     \
+  -B dawn.build                               \
+  -D CMAKE_BUILD_TYPE=Release                 \
+  -D CMAKE_POLICY_DEFAULT_CMP0091=NEW         \
+  -D CMAKE_POLICY_DEFAULT_CMP0092=NEW         \
+  -D CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded \
+  -D DAWN_BUILD_SAMPLES=OFF                   \
+  -D DAWN_BUILD_TESTS=OFF                     \
+  -D DAWN_ENABLE_VULKAN=ON                    \
+  -D DAWN_ENABLE_D3D12=OFF                    \
+  -D DAWN_ENABLE_D3D11=OFF                    \
+  -D DAWN_ENABLE_NULL=OFF                     \
+  -D DAWN_ENABLE_DESKTOP_GL=OFF               \
+  -D DAWN_ENABLE_OPENGLES=OFF                 \
+  -D DAWN_USE_GLFW=OFF                        \
+  -D DAWN_ENABLE_SPIRV_VALIDATION=OFF         \
+  -D DAWN_DXC_ENABLE_ASSERTS_IN_NDEBUG=OFF    \
+  -D DAWN_FETCH_DEPENDENCIES=ON               \
+  -D DAWN_BUILD_MONOLITHIC_LIBRARY=ON         \
+  -D TINT_BUILD_SAMPLES=OFF                   \
+  -D TINT_BUILD_DOCS=OFF                      \
+  -D TINT_BUILD_TESTS=OFF                     \
+  -D TINT_BUILD_GLSL_VALIDATOR=OFF            \
+  -D TINT_BUILD_GLSL_WRITER=OFF               \
+  -D TINT_BUILD_SPV_READER=ON                 \
+  -D TINT_BUILD_SPV_WRITER=ON                 \
   -D ENABLE_HLSL=OFF
 
 # NOTE: webgpu target is in extra.cmake
