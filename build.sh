@@ -12,7 +12,7 @@ fi
 # Clone dawn
 
 if [ ! -d "dawn" ]; then
-  git clone --depth=1 --no-tags --single-branch https://dawn.googlesource.com/dawn
+  git clone --depth=1 --no-tags --single-branch --branch all-fixes-merged https://github.com/SoapyMan/dawn.git
 else
   cd dawn
   git restore src/dawn/native/CMakeLists.txt
@@ -44,7 +44,10 @@ cmake                                   \
   -D DAWN_BUILD_SAMPLES=OFF             \
   -D TINT_BUILD_SAMPLES=OFF             \
   -D TINT_BUILD_DOCS=OFF                \
-  -D TINT_BUILD_TESTS=OFF
+  -D TINT_BUILD_TESTS=OFF               \
+  -D TINT_BUILD_GLSL_VALIDATOR=OFF      \
+  -D TINT_BUILD_GLSL_WRITER=OFF         \
+  -D ENABLE_HLSL=OFF
 
 # NOTE: webgpu target is in extra.cmake
 cmake --build dawn.build --config Release --target webgpu --parallel 4
